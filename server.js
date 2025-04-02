@@ -155,7 +155,6 @@ app.post('/recursos/',authenticate, (req, res) => {
 
 app.delete('/recursos/:rid/',authenticate, (req, res) => {
     const rid = req.params.rid // id recurso
-    const data = req.body
     // .... resto de código de la función
     console.log("Delete recurso "+ rid)
     let recursoExist = datos.resources.find(recurso => recurso.id === rid);

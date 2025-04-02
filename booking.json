@@ -1,0 +1,14 @@
+[
+    {
+    "resource": "resource id",
+    "user": "user2 id",
+    "date": "2025-04-18",
+    "days": 1
+    },
+    {
+    "resource": "resource id",
+    "user": "user1 id",
+    "date": "2025-06-16",
+    "days": 3
+    }
+]

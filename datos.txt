@@ -1,0 +1,43 @@
+{
+  "resources": [
+    {
+      "id": "r3",
+      "name": "Kit de robótica"
+    },
+    {},
+    {
+      "id": "r2",
+      "name": "unai paldillo"
+    },
+    {
+      "id": "r4",
+      "name": "Piesdozar trasnoza"
+    },
+    {
+      "id": "r1",
+      "name": "senozar"
+    }
+  ],
+  "users": [
+    {
+      "id": "u2",
+      "email": "correo@gmail.com",
+      "password": "contraseña",
+      "token": "e77bb72f726fb0d4f39214baa85206d9716a485667cd82a03bff8cbe4236287f"
+    },
+    {
+      "id": "u1",
+      "email": "example@gmail.com",
+      "password": "123456789",
+      "token": "a551ecbdb2df735c53edc7e0b29888b16ec9a3eecce9628b8b5534b366ab593b"
+    }
+  ],
+  "bookings": [
+    {
+      "resource": "r1",
+      "user": "u1",
+      "date": "2025-04-10T10:00:00.000Z",
+      "hours": 3
+    }
+  ]
+}

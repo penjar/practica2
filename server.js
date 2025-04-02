@@ -180,6 +180,12 @@ app.put('/usuarios/:uid',authenticate, (req, res) => {
     // data será un objeto JS, no hace falta parsearlo
     // y tendrá los datos que envió el cliente
     // .... resto de código de la función
+    let userVerify = datos.users.find(user => user.id === uid)
+    if(!userVerify || userVerify.token !== extractToken(req.headers)){
+        res.send("Usuario no valido")
+        return
+    }
+
     console.log("Put usuario con uid: "+uid)
     let usuarioExist = datos.users.find(usuario => usuario.id === uid);
     if(usuarioExist){
@@ -218,8 +224,13 @@ app.post('/usuarios/', (req, res) => {
 
 app.delete('/usuarios/:uid',authenticate, (req, res) => {   
     const uid = req.params.uid; // ID del usuario
-    const data = req.body
     console.log("delete usuario: " + uid);
+
+    let userVerify = datos.users.find(user => user.id === uid)
+    if(!userVerify || userVerify.token !== extractToken(req.headers)){
+        res.send("Usuario no valido")
+        return
+    }
 
     // Busca si el usuario existe
     let usuarioExist = datos.users.find(usuario => usuario.id === uid);
@@ -304,33 +315,29 @@ app.post('/booking/',authenticate, (req, res) => {
     }
 
     let bookingForResource = datos.bookings.filter(booking => booking.resource === data.rid)
+    const newBookingStart = new Date(data.date).getTime() // Inicio de nueva reserva
+    const newBookingEnd = newBookingStart + data.hours * 3600000 // Fin de nueva reserv
+    for (let booking of bookingForResource) {
+        const bookingStart =new Date(booking.date).getTime() // Inicio de reserva existente
+        const bookingEnd = bookingStart + booking.hours * 3600000// Fin de reserva existente
+    
+        // Verificar si hay solapamiento
 
-    let bookingConflict = false
-    const startOfBooking = new Date(data.date).getTime()
-    for(let booking of bookingForResource){
-        const hours2milsecs = booking.hours * 3600000
-        const bookingDate = new Date(booking.date).getTime()
-        const endOfBooking = bookingDate + hours2milsecs 
-        console.log("End of booking: "+endOfBooking)
-        console.log("Date: "+data.date)
-        console.log("End of booking - date: "+(endOfBooking - data.date))
-        if(endOfBooking - data.date < 0)
-            bookingConflict = true
+        if (bookingStart < newBookingEnd && bookingEnd > newBookingStart) {
+            console.log("reserva fallida")
+            res.send("Reserva de " + data.rid + " para " + data.uid + " en fecha " + data.date + " ya existente")
+            return
+        }
     }
-
     console.log("Post booking con rid: "+data.rid+" y uid: "+data.uid+ " en fecha: "+data.date)
 
-    if(!bookingConflict){
-        datos.bookings.push({
-            resource: data.rid,
-            user: data.uid,
-            date: data.date,
-            hours: data.hours
-        })
-        res.send("Reserva de " +data.rid +" para "+data.uid+ " en fecha "+data.date+ " añadida")
-    }else{
-        res.send("Reserva de " +data.rid +" para "+data.uid+ " en fecha "+data.date+ " ya existente")
-    }
+    datos.bookings.push({
+        resource: data.rid,
+        user: data.uid,
+        date: data.date,
+        hours: data.hours
+    })
+    res.send("Reserva de " +data.rid +" para "+data.uid+ " en fecha "+data.date+ " añadida")
     save()
 })
 
@@ -361,3 +368,4 @@ app.delete('/booking/:rid/:uid/:date',authenticate, (req, res) => {
     }
     save()
 })
+

@@ -4,18 +4,17 @@
       "id": "r3",
       "name": "Kit de robótica"
     },
-    {},
     {
       "id": "r2",
       "name": "unai paldillo"
     },
     {
       "id": "r4",
-      "name": "Piesdozar trasnoza"
+      "name": "Microwave Engeneering"
     },
     {
       "id": "r1",
-      "name": "senozar"
+      "name": "Calculadoras Cientificas"
     }
   ],
   "users": [
@@ -50,6 +49,24 @@
       "user": "u1",
       "date": "2025-06-16T18:00:00.000Z",
       "hours": 5
+    },
+    {
+      "resource": "r2",
+      "user": "u1",
+      "date": "2025-06-18T18:00:00.000Z",
+      "hours": 2
+    },
+    {
+      "resource": "r4",
+      "user": "u1",
+      "date": "2025-03-12T12:00:00.000Z",
+      "hours": 100
+    },
+    {
+      "resource": "r4",
+      "user": "u1",
+      "date": "2025-03-12T10:00:00.000Z",
+      "hours": 1
     }
   ]
 }

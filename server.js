@@ -66,13 +66,20 @@ function verifyToken(Token){
     return false
 }
 
-function authenticate(req, res, next) {
-    const authorization= req.headers['authorization']
+function extractToken(header){
+    const authorization = header['authorization']
     if(!authorization)
-        return res.status(401).send('Token no proporcionado')
+        return null
     const token = authorization.split(' ')[1] // Extrae el token del encabezado
     if (!token) 
-        return res.status(401).send('Token o UID no proporcionados')
+        return null
+    return token
+}
+
+function authenticate(req, res, next) {
+    const token = extractToken(req.headers) // Extrae el token del encabezado
+    if (!token)
+        return res.status(401).send('Token no proporcionado')
 
     // Verifica el token
     if (!verifyToken(token))
@@ -243,11 +250,23 @@ app.put('/booking/:rid/:uid/:date',authenticate, (req, res) => {
     // data será un objeto JS, no hace falta parsearlo
     // y tendrá los datos que envió el cliente
     // .... resto de código de la función
+
+    let userVerify = datos.users.find(user => user.id === uid)
+    if(!userVerify || userVerify.token !== extractToken(req.headers)){
+        console.log("Token recibido: "+userVerify.token)
+        console.log("Token esperado: "+extractToken(req.headers))
+        console.log("UID recibido: "+uid)
+        console.log("UID esperado: "+userVerify.id)
+        res.send("Usuario no valido")
+        return
+    }
+
     if(!isValidDate(data.date) || !isValidDate(date)){
         res.send("Fecha no válida")
         return
     }
-    let bookingExist = datos.bookings.find(booking => booking.resource === rid && booking.user === uid && booking.date === date)
+
+    let bookingExist = datos.bookings.find(booking => booking.resource === rid && booking.date === date)
     console.log("Put booking con rid: "+rid+" y uid: "+uid+ " en fecha: "+date)
     if(bookingExist){
         // Actualiza la reserva existente
@@ -273,9 +292,9 @@ app.post('/booking/',authenticate, (req, res) => {
 
 
     let resourceExist = datos.resources.find(resource => resource.id === data.rid)
-    let userVerify = datos.users.find(user => user.id === data.uid)
 
-   if(!userVerify || userVerify.token !== data.token){
+    let userVerify = datos.users.find(user => user.id === data.uid)
+    if(!userVerify || userVerify.token !== extractToken(req.headers)){
         res.send("Usuario no valido")
         return
     }
@@ -287,23 +306,32 @@ app.post('/booking/',authenticate, (req, res) => {
 
     let bookingForResource = datos.bookings.filter(booking => booking.resource === data.rid)
 
+    let bookingConflict = false
+    const startOfBooking = new Date(data.date).getTime()
     for(let booking of bookingForResource){
-        const endOfBooking = booking.date + booking.hours 
-        if(endOfBooking - data.date < 0){
-            res.send("Reserva ya existente")
-            return
-        }
+        const hours2milsecs = booking.hours * 3600000
+        const bookingDate = new Date(booking.date).getTime()
+        const endOfBooking = bookingDate + hours2milsecs 
+        console.log("End of booking: "+endOfBooking)
+        console.log("Date: "+data.date)
+        console.log("End of booking - date: "+(endOfBooking - data.date))
+        if(endOfBooking - data.date < 0)
+            bookingConflict = true
     }
 
     console.log("Post booking con rid: "+data.rid+" y uid: "+data.uid+ " en fecha: "+data.date)
 
-    datos.bookings.push({
-        resource: data.rid,
-        user: data.uid,
-        date: data.date,
-        hours: data.hours
-    })
-    res.send("Reserva de " +data.rid +" para "+data.uid+" añadida")
+    if(!bookingConflict){
+        datos.bookings.push({
+            resource: data.rid,
+            user: data.uid,
+            date: data.date,
+            hours: data.hours
+        })
+        res.send("Reserva de " +data.rid +" para "+data.uid+ " en fecha "+data.date+ " añadida")
+    }else{
+        res.send("Reserva de " +data.rid +" para "+data.uid+ " en fecha "+data.date+ " ya existente")
+    }
     save()
 })
 
@@ -311,16 +339,23 @@ app.delete('/booking/:rid/:uid/:date',authenticate, (req, res) => {
     const uid = req.params.uid // id usuario
     const rid = req.params.rid // id recurso
     const date = req.params.date // fecha de la reserva
+
+    let userVerify = datos.users.find(user => user.id === uid)
+    if(!userVerify || userVerify.token !== extractToken(req.headers)){
+        res.send("Usuario no valido")
+        return
+    }
+
     if(!isValidDate(date)){
         res.send("Fecha no válida")
         return
     }
 
     console.log("Delete booking con rid: "+rid+" y uid: "+uid+ " en fecha: "+date)
-    let bookingExist = datos.bookings.find(booking => booking.resource === rid && booking.user === uid && booking.date === date);
+    let bookingExist = datos.bookings.find(booking => booking.resource === rid && booking.date === date);
     if(bookingExist){
         datos.bookings = datos.bookings.filter(booking => booking.resource !== rid && booking.user !== uid && booking.date !== date) 
-        res.send("Reserva de "+uid+ " por "+uid+ "en fecha "+date+ " eliminado")
+        res.send("Reserva de "+uid+ " por "+uid+ " en fecha "+date+ " eliminado")
     }
     else{
         res.send("Reserva no encontrada")

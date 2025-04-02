@@ -34,10 +34,22 @@
   ],
   "bookings": [
     {
-      "resource": "r1",
+      "resource": "r3",
+      "user": "u2",
+      "date": "2025-06-20T10:00:00.000Z",
+      "hours": 5
+    },
+    {
+      "resource": "r2",
       "user": "u1",
-      "date": "2025-04-10T10:00:00.000Z",
-      "hours": 3
+      "date": "2025-06-16T10:00:00.000Z",
+      "hours": 5
+    },
+    {
+      "resource": "r2",
+      "user": "u1",
+      "date": "2025-06-16T18:00:00.000Z",
+      "hours": 5
     }
   ]
 }

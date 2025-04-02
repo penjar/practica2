@@ -129,7 +129,7 @@ console.log(put)
 result = await deleteUsuario("u3",token)
 console.log(result)
 
-put = await putBooking("r2","u2","2025-06-20T10:00:00.000Z",{
+put = await putBooking("r2","u1","2025-06-20T10:00:00.000Z",{
     rid : "r3",
     uid : "u2",
     date : "2025-06-20T10:00:00.000Z",
@@ -137,13 +137,21 @@ put = await putBooking("r2","u2","2025-06-20T10:00:00.000Z",{
 },token)
 console.log(put)
 
-result = await deleteBooking("r2","u2", "2025-06-16T10:00:00.000Z",token)
+result = await deleteBooking("r2","u1", "2025-06-16T10:00:00.000Z",token)
 console.log(result)
 
 post = await postBooking({
     rid : "r2",
-    uid : "u2",
+    uid : "u1",
     date : "2025-06-16T10:00:00.000Z",
+    hours : 5, 
+},token)
+console.log(post)
+
+post = await postBooking({
+    rid : "r2",
+    uid : "u1",
+    date : "2025-06-16T18:00:00.000Z",
     hours : 5, 
 },token)
 console.log(post)

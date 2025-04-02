@@ -177,9 +177,8 @@ app.get('/usuarios/', (req, res) => {
 app.put('/usuarios/:uid',authenticate, (req, res) => {
     const uid = req.params.uid // ID del usuario
     const data = req.body
-    // data será un objeto JS, no hace falta parsearlo
-    // y tendrá los datos que envió el cliente
-    // .... resto de código de la función
+
+    //verifica si el usuario coincide con el del usuario a modificar
     let userVerify = datos.users.find(user => user.id === uid)
     if(!userVerify || userVerify.token !== extractToken(req.headers)){
         res.send("Usuario no valido")
@@ -201,9 +200,7 @@ app.put('/usuarios/:uid',authenticate, (req, res) => {
 
 app.post('/usuarios/', (req, res) => {
     const data = req.body
-    // data será un objeto JS, no hace falta parsearlo
-    // y tendrá los datos que envió el cliente
-    // .... resto de código de la función
+
     console.log(" Post usuario con uid: "+data.id)
     let usuarioExist = datos.users.find(usuario => usuario.id === data.id);
     if(!usuarioExist){
@@ -226,6 +223,7 @@ app.delete('/usuarios/:uid',authenticate, (req, res) => {
     const uid = req.params.uid; // ID del usuario
     console.log("delete usuario: " + uid);
 
+    //verifica si el usuario coincide con el del usuario a eliminar
     let userVerify = datos.users.find(user => user.id === uid)
     if(!userVerify || userVerify.token !== extractToken(req.headers)){
         res.send("Usuario no valido")
@@ -257,16 +255,10 @@ app.put('/booking/:rid/:uid/:date',authenticate, (req, res) => {
     const rid = req.params.rid // id recurso
     const date = req.params.date // fecha de la reserva
     const data = req.body
-    // data será un objeto JS, no hace falta parsearlo
-    // y tendrá los datos que envió el cliente
-    // .... resto de código de la función
 
+    //verifica si el usuario coincide con el de la reserva a modificar
     let userVerify = datos.users.find(user => user.id === uid)
     if(!userVerify || userVerify.token !== extractToken(req.headers)){
-        console.log("Token recibido: "+userVerify.token)
-        console.log("Token esperado: "+extractToken(req.headers))
-        console.log("UID recibido: "+uid)
-        console.log("UID esperado: "+userVerify.id)
         res.send("Usuario no valido")
         return
     }
@@ -295,34 +287,28 @@ app.put('/booking/:rid/:uid/:date',authenticate, (req, res) => {
 app.post('/booking/',authenticate, (req, res) => {
     const data = req.body
 
+    //comprueba si la fecha es válida
     if(!isValidDate(data.date)){
         res.send("Fecha no válida")
         return
     }
 
-
+    //Busca si el recurso existe
     let resourceExist = datos.resources.find(resource => resource.id === data.rid)
-
-    let userVerify = datos.users.find(user => user.id === data.uid)
-    if(!userVerify || userVerify.token !== extractToken(req.headers)){
-        res.send("Usuario no valido")
-        return
-    }
-
     if(!resourceExist){
         res.send("Recurso no encontrado")
         return
     }
 
+    //itera en un bucle buscando todas las reservas del recurso solicitado y verifica que no haya solapamiento horario
     let bookingForResource = datos.bookings.filter(booking => booking.resource === data.rid)
     const newBookingStart = new Date(data.date).getTime() // Inicio de nueva reserva
-    const newBookingEnd = newBookingStart + data.hours * 3600000 // Fin de nueva reserv
+    const newBookingEnd = newBookingStart + data.hours * 3600000 // Fin de nueva reservA
     for (let booking of bookingForResource) {
         const bookingStart =new Date(booking.date).getTime() // Inicio de reserva existente
         const bookingEnd = bookingStart + booking.hours * 3600000// Fin de reserva existente
     
         // Verificar si hay solapamiento
-
         if (bookingStart < newBookingEnd && bookingEnd > newBookingStart) {
             console.log("reserva fallida")
             res.send("Reserva de " + data.rid + " para " + data.uid + " en fecha " + data.date + " ya existente")
@@ -346,19 +332,21 @@ app.delete('/booking/:rid/:uid/:date',authenticate, (req, res) => {
     const rid = req.params.rid // id recurso
     const date = req.params.date // fecha de la reserva
 
+    //verifica si el usuario coincide con el de la reserva a eliminar
     let userVerify = datos.users.find(user => user.id === uid)
     if(!userVerify || userVerify.token !== extractToken(req.headers)){
         res.send("Usuario no valido")
         return
     }
 
+    //verifica si la fecha es válida
     if(!isValidDate(date)){
         res.send("Fecha no válida")
         return
     }
 
     console.log("Delete booking con rid: "+rid+" y uid: "+uid+ " en fecha: "+date)
-    let bookingExist = datos.bookings.find(booking => booking.resource === rid && booking.date === date);
+    let bookingExist = datos.bookings.find(booking => booking.resource === rid && booking.date === date)
     if(bookingExist){
         datos.bookings = datos.bookings.filter(booking => booking.resource !== rid && booking.user !== uid && booking.date !== date) 
         res.send("Reserva de "+uid+ " por "+uid+ " en fecha "+date+ " eliminado")
